@@ -1,4 +1,4 @@
-require_relative './shared/game_cst'
+require_relative './shared/game_parms'
 
 module TicTacToe
 
@@ -7,9 +7,9 @@ module TicTacToe
     attr_reader :val
 
     def initialize(val='')
-      @game_cst = TicTacToe::Shared::GameCst.setup()
-      @val = @game_cst.all_sym.include?(val) ? val :
-               @game_cst::NONE
+      @game_parms = TicTacToe::Shared::GameParms.setup()
+      @val = @game_parms.all_sym.include?(val) ? val :
+               @game_parms::NONE
     end
 
     def <=>(oth)
@@ -17,24 +17,24 @@ module TicTacToe
     end
 
     #
-    # Set the val to @val iff previous val was TicTacToe::Shared::GameCst::NONE
-    # Returns TicTacToe::Shared::GameCst::NONE otherwise
+    # Set the val to @val iff previous val was TicTacToe::Shared::GameParms::NONE
+    # Returns TicTacToe::Shared::GameParms::NONE otherwise
     #
     def set_val(val)
-      return @game_cst::NONE if !@game_cst.all_sym.include?(val)
-      if @val.to_s == @game_cst::NONE
+      return @game_parms::NONE if !@game_parms.all_sym.include?(val)
+      if @val.to_s == @game_parms::NONE
         @val = val
       else
-        @game_cst::NONE
+        @game_parms::NONE
       end
     end
 
     #
     # Set the val to @val unconditionnaly
-    # Returns TicTacToe::Shared::GameCst::NONE if val is not a legal value
+    # Returns TicTacToe::Shared::GameParms::NONE if val is not a legal value
     #
     def set_val!(val)
-      return @game_cst::NONE if !@game_cst.all_sym.include?(val)
+      return @game_parms::NONE if !@game_parms.all_sym.include?(val)
       @val = val 
     end
 

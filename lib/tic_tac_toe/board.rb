@@ -1,4 +1,4 @@
-require_relative './shared/game_cst'
+require_relative './shared/game_parms'
 
 module TicTacToe
 
@@ -9,15 +9,15 @@ module TicTacToe
     #
     def setup(klass=TicTacToe::Cell)
       # is is an Array literal (assuming correct dim) or a Cell
-      @game_const = TicTacToe::Shared::GameCst.setup()
+      @game_parms = TicTacToe::Shared::GameParms.setup()
       @content = klass.kind_of?(Array) ?
                    _init(klass) :
-                   Array.new(@game_const::DIM).map {Array.new(@game_const::DIM) { klass.new }}
+                   Array.new(@game_parms::DIM).map {Array.new(@game_parms::DIM) { klass.new }}
       self
     end
 
     def nb_cols
-      @game_const::DIM
+      @game_parms::DIM
     end
 
     alias_method :nb_lines, :nb_cols
@@ -33,7 +33,7 @@ module TicTacToe
     # Returns a set of Cell objects
     #
     def col(ic)
-      (0...@game_const::DIM).to_a.inject([]) {|ca, il| ca << @content[il][ic]}
+      (0...@game_parms::DIM).to_a.inject([]) {|ca, il| ca << @content[il][ic]}
     end
 
     #
@@ -49,7 +49,7 @@ module TicTacToe
     #   [ '_', '', '' ] ]
     #
     def diag_up
-      (0...@game_const::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][@game_const::DIM - 1 - ix]}
+      (0...@game_parms::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][@game_parms::DIM - 1 - ix]}
     end
 
     #
@@ -58,7 +58,7 @@ module TicTacToe
     #   [ '', '', '_' ] ]
     #
     def diag_down
-      (0...@game_const::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][ix]}
+      (0...@game_parms::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][ix]}
     end
 
     def diags
@@ -71,18 +71,18 @@ module TicTacToe
     #   [ 7=(2,0) 8=(2,1) 9=(2,2) ] ]
     #
     def to_coord(m)
-      if m <= @game_const::DIM
+      if m <= @game_parms::DIM
         [ 0, m - 1 ]
-      elsif  m <= 2 * @game_const::DIM
-        [ 1, m - @game_const::DIM - 1 ]
+      elsif  m <= 2 * @game_parms::DIM
+        [ 1, m - @game_parms::DIM - 1 ]
       else
-        [ 2, m - 2 * @game_const::DIM - 1 ]
+        [ 2, m - 2 * @game_parms::DIM - 1 ]
       end
     end
 
     def each
-      (0...@game_const::DIM).each do |ix|
-        (0...@game_const::DIM).each do |jx|
+      (0...@game_parms::DIM).each do |ix|
+        (0...@game_parms::DIM).each do |jx|
           yield
         end
       end
@@ -90,8 +90,8 @@ module TicTacToe
 
     def diags_win_case?
       diags.any? do |diag|
-        diag.all? {|c| c.val == @game_const::O} ||
-          diag.all? {|c| c.val == @game_const::X}
+        diag.all? {|c| c.val == @game_parms::O} ||
+          diag.all? {|c| c.val == @game_parms::X}
       end
     end
 
@@ -99,9 +99,9 @@ module TicTacToe
       meth = "#{m}_win_case?".to_sym
       accessor = m.to_s.sub(/s$/, '').to_sym
       define_method(meth) do
-        (0...@game_const::DIM).to_a.any? do |ix|
-          self.send(accessor, ix).all? {|c| c.val == @game_const::O} ||
-            self.send(accessor, ix).all? {|c| c.val == @game_const::X}
+        (0...@game_parms::DIM).to_a.any? do |ix|
+          self.send(accessor, ix).all? {|c| c.val == @game_parms::O} ||
+            self.send(accessor, ix).all? {|c| c.val == @game_parms::X}
         end
       end
     end
@@ -130,15 +130,15 @@ module TicTacToe
     end
 
     def to_s
-      (0...@game_const::DIM).to_a.inject("") do |s, ix|
+      (0...@game_parms::DIM).to_a.inject("") do |s, ix|
         s << " " << @content[ix].map {|c| c.val }.join(' | ') << "\n" <<
           "---|---|---\n"
       end
     end
 
     def to_a
-      (0...@game_const::DIM).inject([]) do |_a, il|
-        _a.concat((0...@game_const::DIM).inject([]) {|_na, ic| _na << @content[il][ic].val })
+      (0...@game_parms::DIM).inject([]) do |_a, il|
+        _a.concat((0...@game_parms::DIM).inject([]) {|_na, ic| _na << @content[il][ic].val })
       end
     end
 
@@ -146,15 +146,15 @@ module TicTacToe
     # Returns true when the grid is complete (with valid token)
     #
     def filled?
-      self.to_a.all? {|v| @game_const.valid_played_sym.include?(v) }
+      self.to_a.all? {|v| @game_parms.valid_played_sym.include?(v) }
     end
 
     #def filled_but_one?
     #  # trap - the following will return the first '_'  w/o checking for the rest
-    #  # self.to_a.find {|v| !@game_const.valid_played_sym.include?(v) } == @game_const::NONE
+    #  # self.to_a.find {|v| !@game_parms.valid_played_sym.include?(v) } == @game_parms::NONE
     #  # CORRECTION - let's count
-    #  hm = self.to_a.inject(0) {|s, v| s = @game_const.valid_played_sym.include?(v) ? s + 1 : s}
-    #  (@game_const::DIM * @game_const::DIM) - hm == 1
+    #  hm = self.to_a.inject(0) {|s, v| s = @game_parms.valid_played_sym.include?(v) ? s + 1 : s}
+    #  (@game_parms::DIM * @game_parms::DIM) - hm == 1
     #end
 
     #
@@ -190,8 +190,8 @@ module TicTacToe
 
     private
     def _init(ary)
-      (0...@game_const::DIM).inject([]) do |_a, il|
-        _a << (0...@game_const::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
+      (0...@game_parms::DIM).inject([]) do |_a, il|
+        _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
       end
     end
 
@@ -199,22 +199,7 @@ module TicTacToe
       old = token.to_s
       meth.to_s.sub(/#{old}/, 'line').to_sym # first match
     end
-
-    #
-    # conditionally set cell to val and return it or
-    # return @game_const::NONE  if the cell was already set or if val is not a valid String
-    #
-    def _set_cell_hlpr(il, ic, val)
-      #return @game_const::NONE if @content[il][ic].val != @game_const::NONE
-      ##
-      #if @game_const.valid_played_sym.include?(val)
-      #  @content[il][ic].val = val
-      #else
-      #  @game_const::NONE
-      #end
-      # @content[il][ic]. 
-    end
-
+    
   end
 
 

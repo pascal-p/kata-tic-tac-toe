@@ -6,10 +6,10 @@ module TicTacToe
   describe Game do
     before(:example) do
       board = TicTacToe::Board.new()
-      @p1 = Player.new(name: 'foo', type: TicTacToe::Shared::GameCst::O)
-      @p2 = Player.new(name: 'bar', type: TicTacToe::Shared::GameCst::X)      
+      @p1 = Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O)
+      @p2 = Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X)      
       @game = Game.new(board, @p1, @p2)      
-      @game_const = TicTacToe::Shared::GameCst.setup
+      @game_parms = TicTacToe::Shared::GameParms.setup
     end
 
     after(:example) do

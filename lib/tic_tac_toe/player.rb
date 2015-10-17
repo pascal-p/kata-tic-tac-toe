@@ -1,4 +1,4 @@
-require_relative './shared/game_cst'
+require_relative './shared/game_parms'
 
 module TicTacToe
 
@@ -6,30 +6,39 @@ module TicTacToe
 
     attr_reader :name, :type
 
-    @@poss_type  = { TicTacToe::Shared::GameCst::X.to_s.downcase.to_sym => 0,
-                     TicTacToe::Shared::GameCst::O.to_s.downcase.to_sym => 0 }
-    @@max_num_player = 2
-    @@num_player     = 0
+    @@nb_player     = 0
     
     def initialize(input)
+      @game_parms = TicTacToe::Shared::GameParms.setup
       raise ArgumentError,
-            "no more than #{@@max_num_player} allowed" if @@num_player >= @@max_num_player
+            "no more than #{@game_parms::MAX_PLAYER} allowed" if @@nb_player >= @game_parms::MAX_PLAYER
       raise ArgumentError,
-            "input hash should be defines and not empty" if input == {} || !input.is_a?(Hash)
+            "input hash should be defined and not empty" if input == {} || !input.is_a?(Hash)
       #
       @name = input.fetch(:name) { "foo_#{rand(100)}" }
-      @type = input.fetch(:type) { @@poss_type.collect {|k, v| k if v == 0} }
-      @@poss_type[@type] = 1
-      @@num_player += 1
+      @type = input.fetch(:type) { @game_parms.poss_type.collect {|k, v| k if v == 0} }
+      @game_parms.poss_type[@type] = 1
+      @@nb_player += 1
     end
 
-    private
+    protected
     def self.reset
-      @@num_player = 0
-      @@poss_type  = { TicTacToe::Shared::GameCst::X.to_s.downcase.to_sym => 0,
-                       TicTacToe::Shared::GameCst::O.to_s.downcase.to_sym => 0 }
+      # class leve laccess
+      @@nb_player = 0
+      TicTacToe::Shared::GameParms.poss_type =
+        TicTacToe::Shared::GameParms.valid_played_sym.inject({}) {|h, v| h.merge({v.to_sym => 0})}
+    end
+    
+  end # Player
+
+  class PlayerIA < Player
+
+    #
+    # Return a valid move in the rnage [1...9]
+    #
+    def get_move(board)
+      # TODO implement 
     end
     
   end
-  
 end

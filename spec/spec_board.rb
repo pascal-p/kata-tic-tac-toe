@@ -8,8 +8,8 @@ module TicTacToe
 
     def manufacture(board, dim, orient=:col)
       ix = rand dim
-      sym, sym_c = ix % 2 == 0 ? [TicTacToe::Shared::GameCst::O, TicTacToe::Shared::GameCst::X] :
-                     [TicTacToe::Shared::GameCst::X, TicTacToe::Shared::GameCst::O]
+      sym, sym_c = ix % 2 == 0 ? [TicTacToe::Shared::GameParms::O, TicTacToe::Shared::GameParms::X] :
+                     [TicTacToe::Shared::GameParms::X, TicTacToe::Shared::GameParms::O]
       board, ix =
              if orient == :col
                col_oriented(board, dim, ix, sym)
@@ -44,25 +44,25 @@ module TicTacToe
     
     before(:example) do
       @board = Board.new
-      @game_const = TicTacToe::Shared::GameCst.setup
+      @game_parms = TicTacToe::Shared::GameParms.setup
     end
 
     context "#initialized" do
 
-      it "sets the grid (0, 0) to be set with @game_const::NONE" do
-        expect(@board.grid[0, 0]).to eq(@game_const::NONE)
+      it "sets the grid (0, 0) to be set with @game_parms::NONE" do
+        expect(@board.grid[0, 0]).to eq(@game_parms::NONE)
       end
 
       it "sets the grid with 3 rows" do
-        expect(@board.grid.nb_rows).to eq(@game_const::DIM)
+        expect(@board.grid.nb_rows).to eq(@game_parms::DIM)
       end
 
       it "sets the grid with 3 cols" do
-        expect(@board.grid.nb_cols).to eq(@game_const::DIM)
+        expect(@board.grid.nb_cols).to eq(@game_parms::DIM)
       end
 
       it "sets the grid with 3*3 cells" do
-        expect(@board.grid.to_a.size).to eq(@game_const::DIM * @game_const::DIM)
+        expect(@board.grid.to_a.size).to eq(@game_parms::DIM * @game_parms::DIM)
       end
 
     end
@@ -70,18 +70,18 @@ module TicTacToe
     context "#columns" do
 
       it "returns the requested column" do
-        o = TicTacToe::Cell.new(@game_const::O)
-        board = Board.new([ [@game_const::NONE, @game_const::O, @game_const::NONE],
-                            [@game_const::NONE, @game_const::O, @game_const::NONE],
-                            [@game_const::NONE, @game_const::O, @game_const::NONE ] ])
+        o = TicTacToe::Cell.new(@game_parms::O)
+        board = Board.new([ [@game_parms::NONE, @game_parms::O, @game_parms::NONE],
+                            [@game_parms::NONE, @game_parms::O, @game_parms::NONE],
+                            [@game_parms::NONE, @game_parms::O, @game_parms::NONE ] ])
         # puts board.to_s
         # set a line to a specific (same) value and check this value
         expect(board.grid.col(1)).to match_array([o, o, o])
       end
 
       it "returns false whenever any cols contains a mix of symbols" do
-        ic, sym_c,@board = Helper.manufacture(@board, @game_const::DIM, :col)
-        il = rand @game_const::DIM
+        ic, sym_c,@board = Helper.manufacture(@board, @game_parms::DIM, :col)
+        il = rand @game_parms::DIM
         @board.grid.set_cell!(il, ic, sym_c)
         expect(@board.send(:cols_win_case?)).to be false
       end
@@ -90,7 +90,7 @@ module TicTacToe
       # cols win
       #
       it "returns true if any col. contains the 3 same symbols" do
-        _, _, @board = Helper.manufacture(@board, @game_const::DIM, :col)
+        _, _, @board = Helper.manufacture(@board, @game_parms::DIM, :col)
         expect(@board.send(:cols_win_case?)).to be true
       end
 
@@ -99,21 +99,21 @@ module TicTacToe
     context "#rows" do
 
       it "returns the requested line/row" do
-        board = Board.new([ [@game_const::NONE, @game_const::NONE, @game_const::NONE],
-                            [@game_const::O, @game_const::O, @game_const::O],
-                            [@game_const::NONE, @game_const::NONE, @game_const::NONE ] ])
+        board = Board.new([ [@game_parms::NONE, @game_parms::NONE, @game_parms::NONE],
+                            [@game_parms::O, @game_parms::O, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::NONE, @game_parms::NONE ] ])
         # puts board.to_s
         # set a line to a specific (same) value and check this value
-        expect(board.grid.line(1)).to match_array([TicTacToe::Cell.new(@game_const::O),
-                                                   TicTacToe::Cell.new(@game_const::O),                                                   TicTacToe::Cell.new(@game_const::O)])
+        expect(board.grid.line(1)).to match_array([TicTacToe::Cell.new(@game_parms::O),
+                                                   TicTacToe::Cell.new(@game_parms::O),                                                   TicTacToe::Cell.new(@game_parms::O)])
       end
 
       #
       # rows/lines win
       #
       it "returns false whenever any lines contains a mix of symbols" do
-        il, sym_c, @board = Helper.manufacture(@board, @game_const::DIM, :row)
-        ic = rand @game_const::DIM
+        il, sym_c, @board = Helper.manufacture(@board, @game_parms::DIM, :row)
+        ic = rand @game_parms::DIM
         @board.grid.set_cell!(il, ic, sym_c)
         expect(@board.send(:lines_win_case?)).to be false
       end
@@ -122,7 +122,7 @@ module TicTacToe
       # lines win
       #
       it "returns true if any lines contains the 3 same symbols" do
-        _, _, @board = Helper.manufacture(@board, @game_const::DIM, :row)
+        _, _, @board = Helper.manufacture(@board, @game_parms::DIM, :row)
         expect(@board.send(:lines_win_case?)).to be true
       end
 
@@ -131,8 +131,8 @@ module TicTacToe
     context "#diag" do
 
       it "returns false whenever any diagonals contains a mix of symbols" do
-        j, sym, @board = Helper.manufacture(@board, @game_const::DIM, :diag)
-        i = rand @game_const::DIM
+        j, sym, @board = Helper.manufacture(@board, @game_parms::DIM, :diag)
+        i = rand @game_parms::DIM
         @board.grid.set_cell!(i, (j - i).abs, sym)
         expect(@board.send(:diags_win_case?)).to be false
       end
@@ -141,7 +141,7 @@ module TicTacToe
       # diags win
       #
       it "returns true if any diagonal contains the 3 same symbols" do
-        _, _, @board = Helper.manufacture(@board, @game_const::DIM, :diag)
+        _, _, @board = Helper.manufacture(@board, @game_parms::DIM, :diag)
         expect(@board.send(:diags_win_case?)).to be true
       end
 
@@ -168,19 +168,19 @@ module TicTacToe
       
       it "returns :winner if winner? is true" do
         ary = [
-          [ [@game_const::O, @game_const::O, @game_const::X],   # a win on a column
-            [@game_const::X, @game_const::O, @game_const::O], 
-            [@game_const::X, @game_const::O, @game_const::X ]
+          [ [@game_parms::O, @game_parms::O, @game_parms::X],   # a win on a column
+            [@game_parms::X, @game_parms::O, @game_parms::O], 
+            [@game_parms::X, @game_parms::O, @game_parms::X ]
           ],
           [
-            [@game_const::O, @game_const::O, @game_const::O],   # a win on a row
-            [@game_const::X, @game_const::X, @game_const::O],
-            [@game_const::X, @game_const::O, @game_const::X ]
+            [@game_parms::O, @game_parms::O, @game_parms::O],   # a win on a row
+            [@game_parms::X, @game_parms::X, @game_parms::O],
+            [@game_parms::X, @game_parms::O, @game_parms::X ]
           ],
           [
-            [@game_const::O, @game_const::O, @game_const::X],  # a win on a diag
-            [@game_const::O, @game_const::X, @game_const::O],
-            [@game_const::X, @game_const::O, @game_const::X]
+            [@game_parms::O, @game_parms::O, @game_parms::X],  # a win on a diag
+            [@game_parms::O, @game_parms::X, @game_parms::O],
+            [@game_parms::X, @game_parms::O, @game_parms::X]
           ]          
         ]
         ary.each do |a|
@@ -191,19 +191,19 @@ module TicTacToe
 
       it "returns :draw if winner? is false and draw? is true" do
         ary = [
-          [ [@game_const::X, @game_const::O, @game_const::O],
-            [@game_const::O, @game_const::X, @game_const::X], 
-            [@game_const::X, @game_const::O, @game_const::O ]
+          [ [@game_parms::X, @game_parms::O, @game_parms::O],
+            [@game_parms::O, @game_parms::X, @game_parms::X], 
+            [@game_parms::X, @game_parms::O, @game_parms::O ]
           ],
           [
-            [@game_const::O, @game_const::X, @game_const::O],
-            [@game_const::X, @game_const::X, @game_const::O],
-            [@game_const::O, @game_const::O, @game_const::X ]
+            [@game_parms::O, @game_parms::X, @game_parms::O],
+            [@game_parms::X, @game_parms::X, @game_parms::O],
+            [@game_parms::O, @game_parms::O, @game_parms::X ]
           ],
           [
-            [@game_const::X, @game_const::O, @game_const::X],
-            [@game_const::O, @game_const::O, @game_const::X],
-            [@game_const::X, @game_const::X, @game_const::O]
+            [@game_parms::X, @game_parms::O, @game_parms::X],
+            [@game_parms::O, @game_parms::O, @game_parms::X],
+            [@game_parms::X, @game_parms::X, @game_parms::O]
           ]          
         ]
         ary.each do |a|
@@ -215,24 +215,24 @@ module TicTacToe
       it "returns false when winner? is false and draw? is false" do
          ary = [
           [
-            [@game_const::X, @game_const::O, @game_const::O],
-            [@game_const::NONE, @game_const::X, @game_const::X], 
-            [@game_const::X, @game_const::O, @game_const::O ]
+            [@game_parms::X, @game_parms::O, @game_parms::O],
+            [@game_parms::NONE, @game_parms::X, @game_parms::X], 
+            [@game_parms::X, @game_parms::O, @game_parms::O ]
           ],
           [
-            [@game_const::O, @game_const::X, @game_const::O],
-            [@game_const::X, @game_const::X, @game_const::O],
-            [@game_const::O, @game_const::O, @game_const::NONE ]
+            [@game_parms::O, @game_parms::X, @game_parms::O],
+            [@game_parms::X, @game_parms::X, @game_parms::O],
+            [@game_parms::O, @game_parms::O, @game_parms::NONE ]
           ],
           [
-            [@game_const::X, @game_const::O, @game_const::X],
-            [@game_const::O, @game_const::O, @game_const::NONE],
-            [@game_const::X, @game_const::X, @game_const::NONE]
+            [@game_parms::X, @game_parms::O, @game_parms::X],
+            [@game_parms::O, @game_parms::O, @game_parms::NONE],
+            [@game_parms::X, @game_parms::X, @game_parms::NONE]
           ],
           [
-            [@game_const::X, @game_const::NONE, @game_const::X],
-            [@game_const::NONE, @game_const::NONE, @game_const::NONE],
-            [@game_const::NONE, @game_const::NONE, @game_const::NONE]
+            [@game_parms::X, @game_parms::NONE, @game_parms::X],
+            [@game_parms::NONE, @game_parms::NONE, @game_parms::NONE],
+            [@game_parms::NONE, @game_parms::NONE, @game_parms::NONE]
           ],
         ]
          ary.each do |a|
@@ -245,23 +245,23 @@ module TicTacToe
 
     context "#draw? predicate" do
       it "returns true if draw? is true - full" do
-        board = Board.new([ [@game_const::O, @game_const::O, @game_const::X],
-                            [@game_const::X, @game_const::O, @game_const::O],
-                            [@game_const::O, @game_const::X, @game_const::X ] ])
+        board = Board.new([ [@game_parms::O, @game_parms::O, @game_parms::X],
+                            [@game_parms::X, @game_parms::O, @game_parms::O],
+                            [@game_parms::O, @game_parms::X, @game_parms::X ] ])
         expect(board.send(:draw?)).to be true
       end
 
       #it "returns true if draw? is true - filled but last last cell" do
-      #  board = Board.new([ [@game_const::O, @game_const::O, @game_const::X],
-      #                      [@game_const::X, @game_const::NONE, @game_const::X],
-      #                      [@game_const::O, @game_const::X, @game_const::O ] ])
+      #  board = Board.new([ [@game_parms::O, @game_parms::O, @game_parms::X],
+      #                      [@game_parms::X, @game_parms::NONE, @game_parms::X],
+      #                      [@game_parms::O, @game_parms::X, @game_parms::O ] ])
       #  expect(board.send(:draw?)).to be true
       #end
 
       it "returns false if the board is filled with less than 7 (or equal)" do
-        board = Board.new([ [@game_const::NONE, @game_const::O, @game_const::X],
-                            [@game_const::X, @game_const::NONE, @game_const::X],
-                            [@game_const::O, @game_const::X, @game_const::O ] ])
+        board = Board.new([ [@game_parms::NONE, @game_parms::O, @game_parms::X],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::X],
+                            [@game_parms::O, @game_parms::X, @game_parms::O ] ])
         expect(board.send(:draw?)).to be false
       end      
       
@@ -270,25 +270,25 @@ module TicTacToe
     context "#winner? predicate" do
       it "returns true whenever a win configuration is found - diag" do
         # let's manufacture a possible win:
-        board = Board.new([ [@game_const::O, @game_const::O, @game_const::X],
-                            [@game_const::NONE, @game_const::X, @game_const::NONE],
-                            [@game_const::X, @game_const::O, @game_const::NONE ] ])
+        board = Board.new([ [@game_parms::O, @game_parms::O, @game_parms::X],
+                            [@game_parms::NONE, @game_parms::X, @game_parms::NONE],
+                            [@game_parms::X, @game_parms::O, @game_parms::NONE ] ])
         expect(board.send(:winner?)).to be true
       end
 
       it "returns true whenever a win configuration is found - line" do
         # let's manufacture a possible win:
-        board = Board.new([ [@game_const::O, @game_const::O, @game_const::X],
-                            [@game_const::X, @game_const::X, @game_const::X],
-                            [@game_const::NONE, @game_const::O, @game_const::O ] ])
+        board = Board.new([ [@game_parms::O, @game_parms::O, @game_parms::X],
+                            [@game_parms::X, @game_parms::X, @game_parms::X],
+                            [@game_parms::NONE, @game_parms::O, @game_parms::O ] ])
         expect(board.send(:winner?)).to be true
       end
 
       it "returns true whenever a win configuration is found - col" do
         # let's manufacture a possible win:
-        board = Board.new([ [@game_const::O, @game_const::X, @game_const::X],
-                            [@game_const::O, @game_const::X, @game_const::O],
-                            [@game_const::NONE, @game_const::X, @game_const::O ] ])
+        board = Board.new([ [@game_parms::O, @game_parms::X, @game_parms::X],
+                            [@game_parms::O, @game_parms::X, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::X, @game_parms::O ] ])
         expect(board.send(:winner?)).to be true
       end
 
@@ -312,21 +312,21 @@ module TicTacToe
     context "grid - cell set" do      
 
       it "does not overwrite a grid cell" do
-        board = Board.new([ [@game_const::O, @game_const::X, @game_const::X],
-                            [@game_const::O, @game_const::X, @game_const::O],
-                            [@game_const::NONE, @game_const::X, @game_const::O ] ])
-        m = rand(@game_const::DIM) * rand(@game_const::DIM) + 1
-        expect(board.set_cell(m, @game_const::O)).to eq(@game_const::NONE)
+        board = Board.new([ [@game_parms::O, @game_parms::X, @game_parms::X],
+                            [@game_parms::O, @game_parms::X, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::X, @game_parms::O ] ])
+        m = rand(@game_parms::DIM) * rand(@game_parms::DIM) + 1
+        expect(board.set_cell(m, @game_parms::O)).to eq(@game_parms::NONE)
       end
 
       it "can set a cell to a specify value" do
-        m = rand(@game_const::DIM) * rand(@game_const::DIM) + 1
-        expect(@board.set_cell(m, @game_const::O)).to eq(@game_const::O)
+        m = rand(@game_parms::DIM) * rand(@game_parms::DIM) + 1
+        expect(@board.set_cell(m, @game_parms::O)).to eq(@game_parms::O)
       end
 
       it "does not set a cell if the value is not allowed" do
-        m = rand(@game_const::DIM) * rand(@game_const::DIM) + 1
-        expect(@board.set_cell(m, 'Z')).to eq(@game_const::NONE)
+        m = rand(@game_parms::DIM) * rand(@game_parms::DIM) + 1
+        expect(@board.set_cell(m, 'Z')).to eq(@game_parms::NONE)
       end
       
     end

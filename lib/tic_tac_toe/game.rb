@@ -16,42 +16,33 @@ module TicTacToe
     # return the name of the winner or :draw 
     #
     def play
-      winner, outcome = '', ''
-      curr_player, oth_player = _init_players
-      
+      outcome = ''
+      c_player, o_player = _init_players
+      #
       loop do
         STDOUT.puts(@board.to_s)   # draw game
         loop do            # current player do his move
-          m, sym = _get_move_from(curr_player) 
+          m, sym = _get_move_from(c_player) 
           break if @board.set_cell(m, sym) == sym
           STDERR.print "! cell already set, try something else\n"
         end
         outcome = @board.game_over?
-        puts("==>> #{outcome}")
         break if outcome == :draw || outcome == :winner
-        curr_player, oth_player = _switch_players(curr_player, oth_player)
+        c_player, o_player = _switch_players(c_player, o_player)
       end
-      STDOUT.puts(@board.to_s) 
-      outcome_s =
-        if outcome == :winner
-          winner = curr_player.name        
-        else
-          outcome
-        end
-      puts("\n\t==> #{outcome_s}")
+      _conclusion(outcome, c_player)
     end
     
     private
-    def _get_move_from(curr_player)
-      # TODO: get move from keyboard interaction
+    def _get_move_from(c_player)
       m = 0
       loop do
-        STDOUT.print ">> player: #{curr_player.name} #{curr_player.type} move [1..9]? "
+        STDOUT.print ">> player: #{c_player.name} #{c_player.type} move [1..9]? "
         m = STDIN.gets.chomp.to_i
         break if m.to_i > 0 && m.to_i <= 9
         STDOUT.print ">> ! illegal input - valid input is a digit in [1..9]\n"
       end
-      return [m, curr_player.type]
+      return [m, c_player.type]
     end
     
     def _init_players
@@ -69,6 +60,17 @@ module TicTacToe
     
     def _switch_players(c_play, o_play)
       return [o_play, c_play]
+    end
+
+    def _conclusion(outcome, c_player)
+      STDOUT.print("#{@board}\n") 
+      outcome_s =
+        if outcome == :winner
+          "#{c_player}.name won"        
+        else
+          outcome.to_s
+        end
+      STDOUT.print("\n\t==> #{outcome_s}\n")      
     end
     
   end

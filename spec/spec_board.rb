@@ -50,7 +50,7 @@ module TicTacToe
     context "#initialized" do
 
       it "sets the grid (0, 0) to be set with @game_parms::NONE" do
-        expect(@board.grid[0, 0]).to eq(@game_parms::NONE)
+        expect(@board.grid[0, 0]).to eq(@game_parms::POS[0]) # == 1
       end
 
       it "sets the grid with 3 rows" do
@@ -319,7 +319,7 @@ module TicTacToe
         expect(board.set_cell(m, @game_parms::O)).to eq(@game_parms::NONE)
       end
 
-      it "can set a cell to a specify value" do
+      it "can set a cell to a specific value" do
         m = rand(@game_parms::DIM) * rand(@game_parms::DIM) + 1
         expect(@board.set_cell(m, @game_parms::O)).to eq(@game_parms::O)
       end

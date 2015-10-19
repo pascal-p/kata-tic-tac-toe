@@ -22,7 +22,8 @@ module TicTacToe
     #
     def set_val(val)
       return @game_parms::NONE if !@game_parms.all_sym.include?(val)
-      if @val.to_s == @game_parms::NONE
+      if ! @game_parms.valid_played_sym.include?(@val)
+        # set the value if current value (@val) is not in the @game_parms.valid_played_sym array
         @val = val
       else
         @game_parms::NONE

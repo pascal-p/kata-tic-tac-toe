@@ -189,9 +189,19 @@ module TicTacToe
     end
 
     private
+    # 2 cases: array of array  [[...], [...], [...]] or single array [... ... ...]
+    # 
     def _init(ary)
-      (0...@game_parms::DIM).inject([]) do |_a, il|
-        _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
+      if ary.first.is_a?(Array)
+        (0...@game_parms::DIM).inject([]) do |_a, il|
+          _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
+        end
+      else
+        # single array
+        a = ary.flat_map {|_a| _a}
+        (0...@game_parms::DIM).inject([]) do |_a, il|
+          _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(a[ic + 3*il]) }
+        end
       end
     end
 
@@ -207,7 +217,7 @@ module TicTacToe
 
     attr_accessor :grid
 
-    def initialize(grid=TicTacToe::Grid.setup())
+    def initialize(grid=TicTacToe::Grid.setup(TicTacToe::Shared::GameParms::POS))
       @grid = grid.kind_of?(Array) ? TicTacToe::Grid.setup(grid) : grid
       @winner_called = 0
       @draw_called = 0

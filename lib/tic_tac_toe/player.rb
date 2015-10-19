@@ -9,7 +9,7 @@ module TicTacToe
     @@nb_player     = 0
     
     def initialize(input)
-      @game_parms = TicTacToe::Shared::GameParms.setup
+      @game_parms = TicTacToe::Shared::GameParms.setup()
       raise ArgumentError,
             "no more than #{@game_parms::MAX_PLAYER} allowed" if @@nb_player >= @game_parms::MAX_PLAYER
       raise ArgumentError,
@@ -26,7 +26,7 @@ module TicTacToe
       # class leve laccess
       @@nb_player = 0
       TicTacToe::Shared::GameParms.poss_type =
-        TicTacToe::Shared::GameParms.valid_played_sym.inject({}) {|h, v| h.merge({v.to_sym => 0})}
+        TicTacToe::Shared::GameParms.valid_played_sym.inject({}) {|h, v| h.merge({v.to_s.to_sym => 0})}
     end
     
   end # Player

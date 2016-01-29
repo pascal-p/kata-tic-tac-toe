@@ -16,6 +16,10 @@ module TicTacToe
       self.val <=> oth.val
     end
 
+    def empty?
+      !@game_parms.valid_played_sym.include?(@val)
+    end
+    
     #
     # Set the val to @val iff previous val was TicTacToe::Shared::GameParms::NONE
     # Returns TicTacToe::Shared::GameParms::NONE otherwise

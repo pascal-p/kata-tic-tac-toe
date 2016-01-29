@@ -44,4 +44,75 @@ module TicTacToe
     
   end
 
+  describe PlayerIA_R do
+
+    before :example do
+      @game_parms = TicTacToe::Shared::GameParms.setup
+      inp = { name: "James", type: @game_parms::O}
+      @ia = PlayerIA_R.new inp      
+    end
+    
+    after(:example) do
+      Player.send(:reset)
+    end
+      
+    context "#2 seeds on a row, col, diag for me" do
+
+      it "returns the col with 2 seeds of player's type" do 
+        board = Board.new([ [@game_parms::NONE, @game_parms::NONE, @game_parms::X],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::NONE, @game_parms::O ] ])
+        #
+        expect(@ia.send(:_2_in_the_board, board)).to eq [:c3, 2]
+      end
+
+      # WON'T work because selecting first
+      #it "returns the cols with 2 seeds of player's type" do 
+      #  board = Board.new([ [@game_parms::NONE, @game_parms::O, @game_parms::X],
+      #                      [@game_parms::X, @game_parms::O, @game_parms::O],
+      #                      [@game_parms::NONE, @game_parms::NONE, @game_parms::O ] ])
+      #  #
+      #  expect(@ia.send(:_2_in_the_board, board)).to match_array([[:c2, 2], [:c3, 2]])
+      #end
+      
+      it "returns empty array if none of the cols have 2 seeds of player's type" do 
+        board = Board.new([ [@game_parms::NONE, @game_parms::NONE, @game_parms::X],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::NONE, @game_parms::X ] ])
+        
+        expect(@ia.send(:_2_in_the_board, board)).to eq []
+      end
+      
+      it "returns the row(s) with 2 seeds of player's type" do 
+        board = Board.new([ [@game_parms::NONE, @game_parms::NONE, @game_parms::X],
+                            [@game_parms::O, @game_parms::NONE, @game_parms::O],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::NONE ] ])
+        #
+        expect(@ia.send(:_2_in_the_board, board)).to eq [:r2, 2]
+      end
+          
+      it "returns the diag(s) with 2 seeds of player's type" do 
+        board = Board.new([ [@game_parms::NONE, @game_parms::NONE, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::O, @game_parms::X],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::NONE ] ])
+        #
+        expect(@ia.send(:_2_in_the_board, board)).to eq [:d1, 2]
+      end
+      
+    end
+
+    context "#2 seeds on a row, col, diag for opponent" do
+      # symetry with previous tests (for me)
+      
+      it "returns the first row with 2 seeds of opponent player's type" do 
+        board = Board.new([ [@game_parms::NONE, @game_parms::X, @game_parms::X],
+                            [@game_parms::X, @game_parms::NONE, @game_parms::O],
+                            [@game_parms::NONE, @game_parms::NONE, @game_parms::O ] ])
+        #
+        expect(@ia.send(:_2_in_the_board, board, @game_parms::X)).to eq [:r1, 2]
+      end
+    end
+    
+  end
+  
 end

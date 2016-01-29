@@ -15,8 +15,8 @@ require 'tic_tac_toe'
 
 def main
   board = TicTacToe::Board.new()
-  p1 = TicTacToe::Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O)
-  p2 = TicTacToe::Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X)      
+  p1 = nil # TicTacToe::Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O)
+  p2 = nil # TicTacToe::Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X)      
   game = TicTacToe::Game.new(board, p1, p2)
 
   game.play

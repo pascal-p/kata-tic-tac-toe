@@ -6,7 +6,7 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   #t.config.raise_errors_for_deprecations!
   
   t.rspec_opts = ["--format documentation","--color"]
-  t.pattern = FileList[ 'spec/*.rb' ] - [ 'spec_helper' ]
+  t.pattern = FileList[ 'spec/spec_*.rb' ] - [ 'spec_helper' ]
   t.verbose = true
 end 
 

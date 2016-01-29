@@ -23,19 +23,21 @@ module TicTacToe
 
     private
     def col_oriented(board, dim, ic, sym)
-      (0...dim).each {|il| board.grid.set_cell(il, ic, sym)} # 1 column with spec value
+      # (0...dim).each {|il| board.grid.set_cell(il, ic, sym)} # 1 column with spec value
+      (0...dim).each {|il| board.set_cell(il, ic, sym)} # 1 column with spec value
       [board, ic]
     end
 
     def row_oriented(board, dim, il, sym)
-      (0...dim).each {|ic| board.grid.set_cell(il, ic, sym)}
+      # (0...dim).each {|ic| board.grid.set_cell(il, ic, sym)}
+      (0...dim).each {|ic| board.set_cell(il, ic, sym)}
       [board, il]
     end
 
     def diag_oriented(board, dim, _, sym)
       ix = rand dim
       j = (ix % 2) == 1 ? (dim - 1) : 0
-      (0...dim).each {|i| board.grid.set_cell(i, (j - i).abs, sym)}
+      (0...dim).each {|i| board.set_cell(i, (j - i).abs, sym)}
       [board, j]
     end
   end
@@ -50,19 +52,23 @@ module TicTacToe
     context "#initialized" do
 
       it "sets the grid (0, 0) to be set with @game_parms::NONE" do
-        expect(@board.grid[0, 0]).to eq(@game_parms::POS[0]) # == 1
+        expect(@board[0, 0]).to eq(@game_parms::POS[0]) # == 1
       end
 
       it "sets the grid with 3 rows" do
-        expect(@board.grid.nb_rows).to eq(@game_parms::DIM)
+        expect(@board.nb_rows).to eq(@game_parms::DIM)
       end
 
       it "sets the grid with 3 cols" do
-        expect(@board.grid.nb_cols).to eq(@game_parms::DIM)
+        expect(@board.nb_cols).to eq(@game_parms::DIM)
       end
 
       it "sets the grid with 3*3 cells" do
-        expect(@board.grid.to_a.size).to eq(@game_parms::DIM * @game_parms::DIM)
+        expect(@board.to_a.size).to eq(@game_parms::DIM * @game_parms::DIM)
+      end
+
+      it "is initialize as empty" do
+        expect(@board.empty?).to be true
       end
 
     end
@@ -76,7 +82,7 @@ module TicTacToe
                             [@game_parms::NONE, @game_parms::O, @game_parms::NONE ] ])
         # puts board.to_s
         # set a line to a specific (same) value and check this value
-        expect(board.grid.col(1)).to match_array([o, o, o])
+        expect(board.col(1)).to match_array([o, o, o])
       end
 
       it "returns false whenever any cols contains a mix of symbols" do
@@ -104,7 +110,7 @@ module TicTacToe
                             [@game_parms::NONE, @game_parms::NONE, @game_parms::NONE ] ])
         # puts board.to_s
         # set a line to a specific (same) value and check this value
-        expect(board.grid.line(1)).to match_array([TicTacToe::Cell.new(@game_parms::O),
+        expect(board.line(1)).to match_array([TicTacToe::Cell.new(@game_parms::O),
                                                    TicTacToe::Cell.new(@game_parms::O),                                                   TicTacToe::Cell.new(@game_parms::O)])
       end
 
@@ -301,7 +307,7 @@ module TicTacToe
         [ [0, 0], [0, 1], [0, 2],
           [1, 0], [1, 1], [1, 2],
           [2, 0], [2, 1], [2, 2] ].each_with_index do |(x, y), ix|
-          _x, _y = @board.grid.to_coord(ix + 1)
+          _x, _y = @board.to_coord(ix + 1)
           expect(x).to eq x
           expect(y).to eq y
         end

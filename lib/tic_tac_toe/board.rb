@@ -1,3 +1,4 @@
+require 'forwardable'
 require_relative './shared/game_parms'
 
 module TicTacToe
@@ -80,6 +81,17 @@ module TicTacToe
       end
     end
 
+    #
+    # (0, 0) == 1
+    # (0, 1) == 2
+    # ...
+    # (1, 1) == 5
+    # ...
+    # (2, 2) == 9
+    def to_move(x, y)
+      x * @game_parms::DIM + y + 1
+    end
+
     def each
       (0...@game_parms::DIM).each do |ix|
         (0...@game_parms::DIM).each do |jx|
@@ -98,6 +110,10 @@ module TicTacToe
     [:lines, :cols].each do |m|
       meth = "#{m}_win_case?".to_sym
       accessor = m.to_s.sub(/s$/, '').to_sym
+      define_method(m) do
+        (0...@game_parms::DIM).to_a.inject([]) {|a, ix| a << self.send(accessor, ix)}
+      end
+
       define_method(meth) do
         (0...@game_parms::DIM).to_a.any? do |ix|
           self.send(accessor, ix).all? {|c| c.val == @game_parms::O} ||
@@ -107,7 +123,7 @@ module TicTacToe
     end
 
     #
-    # set the cell unconditionnaly - but chekc for th validity of the val
+    # set the cell unconditionnaly - but check for th validity of the val
     #
     def set_cell!(il, ic, val)
       @content[il][ic].val= val # delegate to cell
@@ -149,14 +165,12 @@ module TicTacToe
       self.to_a.all? {|v| @game_parms.valid_played_sym.include?(v) }
     end
 
-    #def filled_but_one?
-    #  # trap - the following will return the first '_'  w/o checking for the rest
-    #  # self.to_a.find {|v| !@game_parms.valid_played_sym.include?(v) } == @game_parms::NONE
-    #  # CORRECTION - let's count
-    #  hm = self.to_a.inject(0) {|s, v| s = @game_parms.valid_played_sym.include?(v) ? s + 1 : s}
-    #  (@game_parms::DIM * @game_parms::DIM) - hm == 1
-    #end
-
+    #
+    # Returns true if none of the cell is set to 'O' or 'X'
+    #
+    def empty?
+      self.to_a.all? {|v| !@game_parms.valid_played_sym.include?(v)}
+    end
     #
     # all _row_ methods can be renamed as _line_ methods for convenience
     # also handle get|set_cell
@@ -168,8 +182,12 @@ module TicTacToe
         rmeth = _meth_builder($1, meth_s)
         self.send(rmeth, *args, &block)
       elsif meth_s =~ /^get_cell$/
-        @content[il][ic].val
+        x, y = args[0..1]
+        raise ArgumentError,
+              "cell coordinates not defined x:#{x.inspect}, y: #{y.inspect}" if x.nil? && y.nil?
+        @content[x][y]
       else
+        STDERR.puts("Do not know this method: #{meth} called on #{self.inspect} !!!")
         super
       end
     end
@@ -188,9 +206,13 @@ module TicTacToe
       end
     end
 
+    #
+    # STDERR.puts("=[#{self.inspect}]=> my instance methods are: #{self.instance_methods(false)}")
+    #
+
     private
     # 2 cases: array of array  [[...], [...], [...]] or single array [... ... ...]
-    # 
+    #
     def _init(ary)
       if ary.first.is_a?(Array)
         (0...@game_parms::DIM).inject([]) do |_a, il|
@@ -209,11 +231,12 @@ module TicTacToe
       old = token.to_s
       meth.to_s.sub(/#{old}/, 'line').to_sym # first match
     end
-    
+
   end
 
 
   class Board
+    extend Forwardable
 
     attr_accessor :grid
 
@@ -229,16 +252,12 @@ module TicTacToe
       false
     end
 
-    #
-    # set grid[m]=val, if grid[m] is 'free'
-    #
-    def set_cell(m, val)
-      @grid.set_cell(m, val)
-    end
+    # delegation
+    def_delegators :@grid, :diags, :cols, :col, :rows, :row, :lines, :line, :each, :[],
+       :nb_cols, :nb_rows, :nb_lines
+    def_delegators :@grid, :set_cell, :get_cell, :to_s, :to_a, :to_coord, :empty?
 
-    def to_s
-      @grid.to_s
-    end
+    # STDERR.puts("=[#{self}] my instance methods: #{self.instance_methods(false)}")
 
     private
     #

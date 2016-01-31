@@ -7,8 +7,8 @@ module TicTacToe
     @@game_parms = TicTacToe::Shared::GameParms.setup()
 
     def initialize(board=TicTacToe::Board.new(),
-                   p1=Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O),
-                   p2=Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X))
+                   p1=Base::Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O),
+                   p2=Base::Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X))
       @board = board
       @player1 = p1
       @player2 = p2
@@ -64,23 +64,21 @@ module TicTacToe
           break if ans == 'Y' || ans == ''
         end
         self.instance_variable_set("@player#{ix}",
-                                   HPlayer.new(name: name,
-                                               type: ix == 1 ? @@game_parms::O : @@game_parms::X,
-                                               board: @board.grid,
-                                              ))
+                                   TicTacToe::H::Player.new(
+                                     name: name,
+                                     type: ix == 1 ? @@game_parms::O : @@game_parms::X,
+                                     board: @board.grid,
+                                   ))
       else
         # IA
         self.instance_variable_set("@player#{ix}",
-                                   IAPlayerMiniMax.new(
+                                   IA::PlayerAlphaBeta.new(
                                      name: "IA#{ix}",
                                      type: ix == 1 ? @@game_parms::O : @@game_parms::X,
                                      board: @board.grid
                                    ))
-        #
-        #IAPlayerS.new(name: "IA#{ix}",
-        #              type: ix == 1 ? @@game_parms::O : @@game_parms::X,
-        #              board: @board
-        #             ))
+        # IA::PlayerAlphaBeta.new(
+        # IA::PlayerMiniMax.new(
       end
     end
 

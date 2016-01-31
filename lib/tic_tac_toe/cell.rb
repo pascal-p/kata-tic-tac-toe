@@ -7,9 +7,8 @@ module TicTacToe
     attr_reader :val
 
     def initialize(val='')
-      @game_parms = TicTacToe::Shared::GameParms.setup()
-      @val = @game_parms.all_sym.include?(val) ? val :
-               @game_parms::NONE
+      @gparms = TicTacToe::Shared::GameParms.setup()
+      @val = @gparms.all_sym.include?(val.to_s) ? val.to_s : @gparms::NONE
     end
 
     def <=>(oth)
@@ -17,20 +16,23 @@ module TicTacToe
     end
 
     def empty?
-      !@game_parms.valid_played_sym.include?(@val)
+      r = !@gparms.valid_played_sym.include?(@val)
+      # puts "***** call empty? sym: #{@gparms.valid_played_sym.inspect} / val: #{@val.inspect} ==> #{r}"
+      r
     end
-    
+
     #
     # Set the val to @val iff previous val was TicTacToe::Shared::GameParms::NONE
     # Returns TicTacToe::Shared::GameParms::NONE otherwise
     #
     def set_val(val)
-      return @game_parms::NONE if !@game_parms.all_sym.include?(val)
-      if ! @game_parms.valid_played_sym.include?(@val)
-        # set the value if current value (@val) is not in the @game_parms.valid_played_sym array
-        @val = val
+      return @gparms::NONE if !@gparms.all_sym.include?(val.to_s)
+
+      if @gparms.valid_played_sym.include?(@val)
+        # already and X or and O => do nothing!
+        @gparms::NONE
       else
-        @game_parms::NONE
+        @val = val.to_s
       end
     end
 
@@ -39,8 +41,8 @@ module TicTacToe
     # Returns TicTacToe::Shared::GameParms::NONE if val is not a legal value
     #
     def set_val!(val)
-      return @game_parms::NONE if !@game_parms.all_sym.include?(val)
-      @val = val 
+      return @gparms::NONE if !@gparms.all_sym.include?(val.to_s)
+      @val = val.to_s
     end
 
     alias_method :val=, :set_val!

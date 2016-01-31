@@ -5,13 +5,13 @@ module TicTacToe
   class Game
 
     @@game_parms = TicTacToe::Shared::GameParms.setup()
-    
+
     def initialize(board=TicTacToe::Board.new(),
                    p1=Player.new(name: 'foo', type: TicTacToe::Shared::GameParms::O),
                    p2=Player.new(name: 'bar', type: TicTacToe::Shared::GameParms::X))
       @board = board
       @player1 = p1
-      @player2 = p2      
+      @player2 = p2
     end
 
     #
@@ -21,13 +21,16 @@ module TicTacToe
       outcome = ''
       [1, 2].each {|ix| _select_players(ix)}
       c_player, o_player = _init_players
+      o_player.set_other!(c_player) if o_player.is_IA_S?
+      c_player.set_other!(o_player) if c_player.is_IA_S?
       #
       loop do
-        STDOUT.puts(@board.to_s)   # draw game
-        loop do            # current player do his move
-          m, sym = _get_move_from(c_player)
-          break if @board.set_cell(m, sym) == sym
-          STDERR.print "! cell already set, try something else\n"
+        STDOUT.print("#{@board.to_s}\n#==> #{c_player.name}/#{c_player.type}'s TURN:\n")
+        loop do
+          m, sym = _get_move_from(c_player) # current player do his move
+          v = @board.set_cell(m, sym.to_s)
+          break if m == -1 || v == sym      # if sym not valid symbol, set_cell(m, sym != sym
+          STDERR.print "! cell[#{m}] already set, try something else - v was: #{v.inspect} // #{v.class}\n"
         end
         outcome = @board.game_over?
         break if outcome == :draw || outcome == :winner
@@ -38,9 +41,9 @@ module TicTacToe
 
     private
     def _get_move_from(c_player)
-      return [c_player.get_move(@board), c_player.type]
+      return [c_player.get_move, c_player.type]
     end
-    
+
     def _select_players(ix)
       ans, name = '', ''
       #
@@ -62,12 +65,22 @@ module TicTacToe
         end
         self.instance_variable_set("@player#{ix}",
                                    HPlayer.new(name: name,
-                                               type: ix == 1 ? @@game_parms::O : @@game_parms::X))
+                                               type: ix == 1 ? @@game_parms::O : @@game_parms::X,
+                                               board: @board.grid,
+                                              ))
       else
         # IA
         self.instance_variable_set("@player#{ix}",
-                                   IAPlayerS.new(name: "IA#{ix}",
-                                                 type: ix == 1 ? @@game_parms::O : @@game_parms::X))
+                                   IAPlayerMiniMax.new(
+                                     name: "IA#{ix}",
+                                     type: ix == 1 ? @@game_parms::O : @@game_parms::X,
+                                     board: @board.grid
+                                   ))
+        #
+        #IAPlayerS.new(name: "IA#{ix}",
+        #              type: ix == 1 ? @@game_parms::O : @@game_parms::X,
+        #              board: @board
+        #             ))
       end
     end
 

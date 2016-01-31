@@ -11,14 +11,15 @@ module TicTacToe
     def setup(klass=TicTacToe::Cell)
       # is is an Array literal (assuming correct dim) or a Cell
       @game_parms = TicTacToe::Shared::GameParms.setup()
+      @dim = @game_parms::DIM
       @content = klass.kind_of?(Array) ?
                    _init(klass) :
-                   Array.new(@game_parms::DIM).map {Array.new(@game_parms::DIM) { klass.new }}
+                   Array.new(@dim).map {Array.new(@dim) { klass.new }}
       self
     end
 
     def nb_cols
-      @game_parms::DIM
+      @dim
     end
 
     alias_method :nb_lines, :nb_cols
@@ -34,7 +35,7 @@ module TicTacToe
     # Returns a set of Cell objects
     #
     def col(ic)
-      (0...@game_parms::DIM).to_a.inject([]) {|ca, il| ca << @content[il][ic]}
+      (0...@dim).to_a.inject([]) {|ca, il| ca << @content[il][ic]}
     end
 
     #
@@ -50,7 +51,7 @@ module TicTacToe
     #   [ '_', '', '' ] ]
     #
     def diag_up
-      (0...@game_parms::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][@game_parms::DIM - 1 - ix]}
+      (0...@dim).to_a.inject([]) {|ca, ix| ca << @content[ix][@dim - 1 - ix]}
     end
 
     #
@@ -59,7 +60,7 @@ module TicTacToe
     #   [ '', '', '_' ] ]
     #
     def diag_down
-      (0...@game_parms::DIM).to_a.inject([]) {|ca, ix| ca << @content[ix][ix]}
+      (0...@dim).to_a.inject([]) {|ca, ix| ca << @content[ix][ix]}
     end
 
     def diags
@@ -72,12 +73,12 @@ module TicTacToe
     #   [ 7=(2,0) 8=(2,1) 9=(2,2) ] ]
     #
     def to_coord(m)
-      if m <= @game_parms::DIM
+      if m <= @dim
         [ 0, m - 1 ]
-      elsif  m <= 2 * @game_parms::DIM
-        [ 1, m - @game_parms::DIM - 1 ]
+      elsif  m <= 2 * @dim
+        [ 1, m - @dim - 1 ]
       else
-        [ 2, m - 2 * @game_parms::DIM - 1 ]
+        [ 2, m - 2 * @dim - 1 ]
       end
     end
 
@@ -89,14 +90,12 @@ module TicTacToe
     # ...
     # (2, 2) == 9
     def to_move(x, y)
-      x * @game_parms::DIM + y + 1
+      x * @dim + y + 1
     end
 
     def each
-      (0...@game_parms::DIM).each do |ix|
-        (0...@game_parms::DIM).each do |jx|
-          yield
-        end
+      (0...@dim).each do |ix|
+        (0...@dim).each {|jx| yield @content[ix][jx]}
       end
     end
 
@@ -110,52 +109,75 @@ module TicTacToe
     [:lines, :cols].each do |m|
       meth = "#{m}_win_case?".to_sym
       accessor = m.to_s.sub(/s$/, '').to_sym
+      #
+      # define lines() and cols() methods
       define_method(m) do
-        (0...@game_parms::DIM).to_a.inject([]) {|a, ix| a << self.send(accessor, ix)}
+        (0...@dim).to_a.inject([]) {|a, ix| a << self.send(accessor, ix)}
       end
-
+      #
+      # define lines_win_case?, cols_win_case? predicates (methods)
       define_method(meth) do
-        (0...@game_parms::DIM).to_a.any? do |ix|
+        (0...@dim).to_a.any? do |ix|
           self.send(accessor, ix).all? {|c| c.val == @game_parms::O} ||
             self.send(accessor, ix).all? {|c| c.val == @game_parms::X}
         end
       end
     end
 
+    [:cols, :rows, :diags].each do |coll|
+      singular = coll.to_s.sub(/s$/, '')
+      #
+      # define each_col(), each_row(), each_diag() methods
+      define_method("each_#{singular}".to_sym) do |&blk|
+        self.send(coll).each {|obj| blk.call obj }
+      end
+    end
+
     #
-    # set the cell unconditionnaly - but check for th validity of the val
+    # set the cell unconditionnaly - but check for the validity of the val
     #
-    def set_cell!(il, ic, val)
-      @content[il][ic].val= val # delegate to cell
+    def set_cell!(*args)   # NEED TOCHECK WHAT IS HAPPENING WITH set_val
+      _set_cell_hplr(args, :set_val!)
     end
 
     #
     # ignore args.size > 3
     #
     def set_cell(*args)
-      il, ic = args[0..1] # ic may be a string
-      if ic.is_a?(String)
-        # il is a m (move) which needs to be converted, ic is the val
-        jl, jc = *to_coord(il)
-        @content[jl][jc].set_val(ic)
+      _set_cell_hplr(args, :set_val)
+    end
+
+    def _set_cell_hplr(args, setter)
+      ix, iy = args[0..1] # iy may be a string
+      #
+      if iy.is_a?(String) || iy.is_a?(Symbol)
+        # ix is a m (move) which needs to be converted, iy is the val
+        jx, jy = *to_coord(ix.to_i)
+        @content[jx][jy].send(setter, iy.to_s)
+        #
       elsif args.size > 2
-        @content[il][ic].set_val(args[2])
+        @content[ix][iy].send(setter, args[2].to_s)
+        #
       else
         # NO-OP
       end
     end
 
     def to_s
-      (0...@game_parms::DIM).to_a.inject("") do |s, ix|
+      (0...@dim).to_a.inject("") do |s, ix|
         s << " " << @content[ix].map {|c| c.val }.join(' | ') << "\n" <<
           "---|---|---\n"
       end
     end
 
     def to_a
-      (0...@game_parms::DIM).inject([]) do |_a, il|
-        _a.concat((0...@game_parms::DIM).inject([]) {|_na, ic| _na << @content[il][ic].val })
+      (0...@dim).inject([]) do |_a, il|
+        _a.concat((0...@dim).inject([]) {|_na, ic| _na << @content[il][ic].val })
       end
+    end
+
+    def inspect
+      "#{self.class}: <@dim: #{@dim}, @content: #{@content.inspect}>"
     end
 
     #
@@ -183,6 +205,9 @@ module TicTacToe
         self.send(rmeth, *args, &block)
       elsif meth_s =~ /^get_cell$/
         x, y = args[0..1]
+        # puts "....> x: #{x.inspect}, y: #{y.inspect}"
+        x, y = to_coord(x) if y.nil? # it is a move and only x is defined, get the coordinates
+        # puts "......> x: #{x.inspect}, y: #{y.inspect}"
         raise ArgumentError,
               "cell coordinates not defined x:#{x.inspect}, y: #{y.inspect}" if x.nil? && y.nil?
         @content[x][y]
@@ -215,15 +240,18 @@ module TicTacToe
     #
     def _init(ary)
       if ary.first.is_a?(Array)
-        (0...@game_parms::DIM).inject([]) do |_a, il|
-          _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
+        (0...@dim).inject([]) do |_a, il|
+          _a << (0...@dim).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(ary[il][ic]) }
         end
       else
         # single array
         a = ary.flat_map {|_a| _a}
-        (0...@game_parms::DIM).inject([]) do |_a, il|
-          _a << (0...@game_parms::DIM).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(a[ic + 3*il]) }
+
+        ary = (0...@dim).inject([]) do |_a, il|
+          _a << (0...@dim).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(a[ic + @dim * il]) }
         end
+        # puts "===> [#{__method__} / DEBUG] ary: #{ary.inspect}\n"
+        ary
       end
     end
 
@@ -253,11 +281,9 @@ module TicTacToe
     end
 
     # delegation
-    def_delegators :@grid, :diags, :cols, :col, :rows, :row, :lines, :line, :each, :[],
-       :nb_cols, :nb_rows, :nb_lines
-    def_delegators :@grid, :set_cell, :get_cell, :to_s, :to_a, :to_coord, :empty?
-
-    # STDERR.puts("=[#{self}] my instance methods: #{self.instance_methods(false)}")
+    def_delegators :@grid, :diags, :cols, :col, :rows, :row, :lines, :line, :each, :[], :nb_cols,
+       :nb_rows, :nb_lines
+    def_delegators :@grid, :set_cell, :set_cell!, :get_cell, :to_s, :to_a, :to_coord, :empty?
 
     private
     #
@@ -287,9 +313,9 @@ module TicTacToe
     # Returns true if any of the 3 columns contain the smae symbol
     # Returns true if any of the 3 line contain the smae symbol
     #
-    [:diags_win_case?,
-     :cols_win_case?,
-     :lines_win_case? ].each do |meth|
+    [:diags_win_case?, :cols_win_case?, :lines_win_case? ].each do |meth|
+      #
+      #
       define_method(meth) do
         @grid.send(meth)
       end

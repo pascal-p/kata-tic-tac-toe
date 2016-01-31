@@ -15,9 +15,9 @@ module TicTacToe
                col_oriented(board, dim, ix, sym)
              elsif orient == :diag
                diag_oriented(board, dim, ix, sym) # ix is used for diag up or down
-             else                    
+             else
                row_oriented(board, dim, ix, sym) # :row or :line
-             end        
+             end
       [ix, sym_c, board]
     end
 
@@ -43,7 +43,7 @@ module TicTacToe
   end
 
   describe Board do
-    
+
     before(:example) do
       @board = Board.new
       @game_parms = TicTacToe::Shared::GameParms.setup
@@ -52,7 +52,7 @@ module TicTacToe
     context "#initialized" do
 
       it "sets the grid (0, 0) to be set with @game_parms::NONE" do
-        expect(@board[0, 0]).to eq(@game_parms::POS[0]) # == 1
+        expect(@board[0, 0]).to eq(@game_parms::POS[0].to_s) # == 1
       end
 
       it "sets the grid with 3 rows" do
@@ -165,17 +165,17 @@ module TicTacToe
         allow(@board).to receive(:draw?) { true }
         expect(@board.game_over?).to eq :draw
       end
-      
+
       it "returns [fake] false if winner? is false and draw? is false" do
         allow(@board).to receive(:winner?) { false }
         allow(@board).to receive(:draw?) { false }
         expect(@board.game_over?).to be false
       end
-      
+
       it "returns :winner if winner? is true" do
         ary = [
           [ [@game_parms::O, @game_parms::O, @game_parms::X],   # a win on a column
-            [@game_parms::X, @game_parms::O, @game_parms::O], 
+            [@game_parms::X, @game_parms::O, @game_parms::O],
             [@game_parms::X, @game_parms::O, @game_parms::X ]
           ],
           [
@@ -187,7 +187,7 @@ module TicTacToe
             [@game_parms::O, @game_parms::O, @game_parms::X],  # a win on a diag
             [@game_parms::O, @game_parms::X, @game_parms::O],
             [@game_parms::X, @game_parms::O, @game_parms::X]
-          ]          
+          ]
         ]
         ary.each do |a|
           board = Board.new(a)
@@ -198,7 +198,7 @@ module TicTacToe
       it "returns :draw if winner? is false and draw? is true" do
         ary = [
           [ [@game_parms::X, @game_parms::O, @game_parms::O],
-            [@game_parms::O, @game_parms::X, @game_parms::X], 
+            [@game_parms::O, @game_parms::X, @game_parms::X],
             [@game_parms::X, @game_parms::O, @game_parms::O ]
           ],
           [
@@ -210,7 +210,7 @@ module TicTacToe
             [@game_parms::X, @game_parms::O, @game_parms::X],
             [@game_parms::O, @game_parms::O, @game_parms::X],
             [@game_parms::X, @game_parms::X, @game_parms::O]
-          ]          
+          ]
         ]
         ary.each do |a|
           board = Board.new(a)
@@ -222,7 +222,7 @@ module TicTacToe
          ary = [
           [
             [@game_parms::X, @game_parms::O, @game_parms::O],
-            [@game_parms::NONE, @game_parms::X, @game_parms::X], 
+            [@game_parms::NONE, @game_parms::X, @game_parms::X],
             [@game_parms::X, @game_parms::O, @game_parms::O ]
           ],
           [
@@ -246,7 +246,7 @@ module TicTacToe
            expect(board.game_over?).to be false
          end
       end
-      
+
     end
 
     context "#draw? predicate" do
@@ -269,8 +269,8 @@ module TicTacToe
                             [@game_parms::X, @game_parms::NONE, @game_parms::X],
                             [@game_parms::O, @game_parms::X, @game_parms::O ] ])
         expect(board.send(:draw?)).to be false
-      end      
-      
+      end
+
     end
 
     context "#winner? predicate" do
@@ -312,10 +312,10 @@ module TicTacToe
           expect(y).to eq y
         end
       end
-      
+
     end
-    
-    context "grid - cell set" do      
+
+    context "grid - cell set" do
 
       it "does not overwrite a grid cell" do
         board = Board.new([ [@game_parms::O, @game_parms::X, @game_parms::X],
@@ -334,9 +334,9 @@ module TicTacToe
         m = rand(@game_parms::DIM) * rand(@game_parms::DIM) + 1
         expect(@board.set_cell(m, 'Z')).to eq(@game_parms::NONE)
       end
-      
+
     end
-    
+
   end
-  
+
 end

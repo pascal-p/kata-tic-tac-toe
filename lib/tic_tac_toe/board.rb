@@ -11,10 +11,10 @@ module TicTacToe
     def setup(klass=TicTacToe::Cell)
       # is is an Array literal (assuming correct dim) or a Cell
       @game_parms = TicTacToe::Shared::GameParms.setup()
-      @dim = @game_parms::DIM
-      @content = klass.kind_of?(Array) ?
-                   _init(klass) :
-                   Array.new(@dim).map {Array.new(@dim) { klass.new }}
+      @dim        = @game_parms::DIM
+      @content    = klass.kind_of?(Array) ?
+                      _init(klass) :
+                      Array.new(@dim).map {Array.new(@dim) { klass.new }}
       self
     end
 
@@ -68,18 +68,22 @@ module TicTacToe
     end
 
     #
+    # Convert from index [1..9] to coordinates
+    #
     # [ [ 1=(0,0) 2=(0,1) 3=(0,2) ]
     #   [ 4=(1,0) 5=(1,1) 6=(1,2) ]
     #   [ 7=(2,0) 8=(2,1) 9=(2,2) ] ]
     #
     def to_coord(m)
-      if m <= @dim
-        [ 0, m - 1 ]
-      elsif  m <= 2 * @dim
-        [ 1, m - @dim - 1 ]
-      else
-        [ 2, m - 2 * @dim - 1 ]
+      # [ 0, 1, 2], [3, 4, 5], [6, 7, 8]
+      c = []
+      (0...@dim * @dim).slice_before {|x| x % @dim == 0 && x != 0}.to_a.each_with_index do |inter, ix|
+        if m <= inter.last + 1
+          c = [ix, m - (ix * @dim) - 1]
+          break
+        end
       end
+      c
     end
 
     #
@@ -106,16 +110,18 @@ module TicTacToe
       end
     end
 
+    #
+    # define lines() and cols() methods and
+    #  lines_win_case?, cols_win_case? predicates (methods)
+    #
     [:lines, :cols].each do |m|
       meth = "#{m}_win_case?".to_sym
       accessor = m.to_s.sub(/s$/, '').to_sym
       #
-      # define lines() and cols() methods
       define_method(m) do
         (0...@dim).to_a.inject([]) {|a, ix| a << self.send(accessor, ix)}
       end
       #
-      # define lines_win_case?, cols_win_case? predicates (methods)
       define_method(meth) do
         (0...@dim).to_a.any? do |ix|
           self.send(accessor, ix).all? {|c| c.val == @game_parms::O} ||
@@ -124,10 +130,11 @@ module TicTacToe
       end
     end
 
+    #
+    # define each_col(), each_row(), each_diag() methods
+    #
     [:cols, :rows, :diags].each do |coll|
       singular = coll.to_s.sub(/s$/, '')
-      #
-      # define each_col(), each_row(), each_diag() methods
       define_method("each_#{singular}".to_sym) do |&blk|
         self.send(coll).each {|obj| blk.call obj }
       end
@@ -164,9 +171,9 @@ module TicTacToe
     end
 
     def to_s
+      pattern = (("-" * 4 + "|") * @dim).sub(/\|$/, "\n") # "---|---|---\n"
       (0...@dim).to_a.inject("") do |s, ix|
-        s << " " << @content[ix].map {|c| c.val }.join(' | ') << "\n" <<
-          "---|---|---\n"
+        s << " " << @content[ix].map {|c| c.val.length < 2 ? " #{c.val}" : c.val }.join(' | ') << "\n" << pattern
       end
     end
 
@@ -205,9 +212,9 @@ module TicTacToe
         self.send(rmeth, *args, &block)
       elsif meth_s =~ /^get_cell$/
         x, y = args[0..1]
-        # puts "....> x: #{x.inspect}, y: #{y.inspect}"
-        x, y = to_coord(x) if y.nil? # it is a move and only x is defined, get the coordinates
-        # puts "......> x: #{x.inspect}, y: #{y.inspect}"
+        x, y = to_coord(x) if y.nil?
+        #      \__ it is a move and only x is defined, get the coordinates
+        #
         raise ArgumentError,
               "cell coordinates not defined x:#{x.inspect}, y: #{y.inspect}" if x.nil? && y.nil?
         @content[x][y]
@@ -224,16 +231,11 @@ module TicTacToe
         rmeth = _meth_builder($1, meth_s)
         self.class.instance_methods(false).include?(rmeth)
       elsif meth_s =~ /^get_cell$/
-        #elsif meth_s =~ /^[sg]et_cell$|^set_cell!$/
-        true
+        true # elsif meth_s =~ /^[sg]et_cell$|^set_cell!$/
       else
         super
       end
     end
-
-    #
-    # STDERR.puts("=[#{self.inspect}]=> my instance methods are: #{self.instance_methods(false)}")
-    #
 
     private
     # 2 cases: array of array  [[...], [...], [...]] or single array [... ... ...]
@@ -250,7 +252,6 @@ module TicTacToe
         ary = (0...@dim).inject([]) do |_a, il|
           _a << (0...@dim).inject([]) {|_na, ic| _na << TicTacToe::Cell.new(a[ic + @dim * il]) }
         end
-        # puts "===> [#{__method__} / DEBUG] ary: #{ary.inspect}\n"
         ary
       end
     end
@@ -281,9 +282,9 @@ module TicTacToe
     end
 
     # delegation
-    def_delegators :@grid, :diags, :cols, :col, :rows, :row, :lines, :line, :each, :[], :nb_cols,
-       :nb_rows, :nb_lines
-    def_delegators :@grid, :set_cell, :set_cell!, :get_cell, :to_s, :to_a, :to_coord, :empty?
+    def_delegators(:@grid, :diags, :cols, :col, :rows, :row, :lines, :line,
+                   :each, :[], :nb_cols,:nb_rows, :nb_lines, :empty?,
+                   :set_cell, :set_cell!, :get_cell, :to_s, :to_a, :to_coord)
 
     private
     #
@@ -297,8 +298,7 @@ module TicTacToe
         flag = winner?
         return !flag if flag # winner? => not draw?
       end
-      # @grid.filled_but_one? || @grid.filled?
-      @grid.filled?
+      @grid.filled? # @grid.filled_but_one? || @grid.filled?
     end
 
     def winner?
@@ -309,12 +309,11 @@ module TicTacToe
     end
 
     #
-    # Returns true if any of the 2 diags contain the smae symbol
-    # Returns true if any of the 3 columns contain the smae symbol
-    # Returns true if any of the 3 line contain the smae symbol
+    # Returns true if any of the 2 diags   contain the same symbol
+    # Returns true if any of the 3 columns "     "  "  "  " "    "
+    # Returns true if any of the 3 line    "     "  "  "  " "    "
     #
     [:diags_win_case?, :cols_win_case?, :lines_win_case? ].each do |meth|
-      #
       #
       define_method(meth) do
         @grid.send(meth)

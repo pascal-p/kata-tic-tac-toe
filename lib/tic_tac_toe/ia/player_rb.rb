@@ -36,7 +36,7 @@ module TicTacToe
         true
       end
 
-      def get_move
+      def get_move(_)
         raise "Not yet implemeted"
       end
 

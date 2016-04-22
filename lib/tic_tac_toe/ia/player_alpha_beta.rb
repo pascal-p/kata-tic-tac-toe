@@ -14,8 +14,9 @@ module TicTacToe
         end
       end
 
-      def get_move
-        _, move = search(@@game_parms::DIM - 1, self, MyFixnum::SIGNED_MIN, MyFixnum::SIGNED_MAX)
+      def get_move(_)
+        _, move = search(@@game_parms::DIM - 1,
+                         self, MyFixnum::SIGNED_MIN, MyFixnum::SIGNED_MAX)
         return move # @board.to_move(x, y)
       end
 

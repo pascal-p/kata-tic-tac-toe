@@ -32,7 +32,7 @@ module TicTacToe
         true
       end
 
-      def get_move
+      def get_move(_)
         _, move = search(@@game_parms::DIM - 1, self)
         return move # @board.to_move(x, y)
       end

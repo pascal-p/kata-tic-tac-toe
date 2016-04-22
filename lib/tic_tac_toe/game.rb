@@ -24,14 +24,20 @@ module TicTacToe
       o_player.set_other!(c_player) if o_player.is_IA_S?
       c_player.set_other!(o_player) if c_player.is_IA_S?
       #
+      move_already_played = []
+      #
       loop do
         STDOUT.print("#{@board.to_s}\n#==> #{c_player.name}/#{c_player.type}'s TURN:\n")
         loop do
-          m, sym = _get_move_from(c_player) # current player do his move
+          m, sym = _get_move_from(c_player, move_already_played) # current player do his move
           v = @board.set_cell(m, sym.to_s)
-          break if m == -1 || v == sym      # if sym not valid symbol, set_cell(m, sym != sym
+          if m == -1 || v == sym  # if sym not valid symbol, set_cell(m, sym != sym
+            move_already_played << m.to_i
+            break
+          end
           STDERR.print "! cell[#{m}] already set, try something else - v was: #{v.inspect} // #{v.class}\n"
         end
+        move_already_played.sort!
         outcome = @board.game_over?
         break if outcome == :draw || outcome == :winner
         c_player, o_player = _switch_players(c_player, o_player)
@@ -40,8 +46,8 @@ module TicTacToe
     end
 
     private
-    def _get_move_from(c_player)
-      return [c_player.get_move, c_player.type]
+    def _get_move_from(c_player, move_already_played=[])
+      return [c_player.get_move(move_already_played), c_player.type]
     end
 
     def _select_players(ix)
@@ -77,8 +83,7 @@ module TicTacToe
                                      type: ix == 1 ? @@game_parms::O : @@game_parms::X,
                                      board: @board.grid
                                    ))
-        # IA::PlayerAlphaBeta.new(
-        # IA::PlayerMiniMax.new(
+        # IA::PlayerMiniMax.new()
       end
     end
 

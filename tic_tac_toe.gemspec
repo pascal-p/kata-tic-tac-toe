@@ -11,7 +11,8 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Tic Tac Toe game implementation}
   spec.description   = %q{Tic Tac Toe game implementation with IA player(s)...}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/pascal-p/kata-tic-tac-toe"
+  spec.license       = 'BSD-2-Clause'
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
@@ -29,5 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
-  
+
 end
